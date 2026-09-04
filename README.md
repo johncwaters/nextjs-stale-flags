@@ -4,10 +4,12 @@ Next.js 16 App Router app with 19 PostHog feature flags planted on purpose: 8 st
 
 ## Setup
 
+> **Warning:** the seed script creates or overwrites 19 feature flags and backfills 38 `$feature_flag_called` events in the PostHog project you configure. Point it at a throwaway project. It refuses to run without `--yes`.
+
 ```bash
 npm install
-cp .env.example .env.local   # fill in project key, personal API key, project id
-node --env-file=.env.local scripts/seed-posthog.mjs
+cp .env.example .env.local   # fill in project key, personal API key, project id (a throwaway project)
+node --env-file=.env.local scripts/seed-posthog.mjs --yes
 npm run dev
 ```
 

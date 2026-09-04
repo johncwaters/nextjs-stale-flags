@@ -9,6 +9,20 @@ const projectApiKey = requireEnv("NEXT_PUBLIC_POSTHOG_KEY");
 const apiHost = process.env.POSTHOG_API_HOST ?? "https://us.posthog.com";
 const ingestHost = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com";
 
+const flagCount = manifest.flags.length;
+if (!process.argv.includes("--yes")) {
+  console.error(
+    [
+      `This will create or overwrite ${flagCount} feature flags and backfill ${flagCount * 2} $feature_flag_called events`,
+      `in PostHog project ${projectId} at ${apiHost}. Use a throwaway project, not a real one.`,
+      "",
+      "Re-run with --yes to proceed:",
+      "  node --env-file=.env.local scripts/seed-posthog.mjs --yes",
+    ].join("\n"),
+  );
+  process.exit(2);
+}
+
 function requireEnv(name) {
   const value = process.env[name];
   if (!value) {
