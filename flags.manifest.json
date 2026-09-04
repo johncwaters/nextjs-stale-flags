@@ -1,0 +1,439 @@
+{
+  "version": 1,
+  "description": "Every PostHog feature flag planted in this fixture, its intended state in PostHog, where it is referenced in code, and the verdict a stale-flag audit is expected to reach. scripts/seed-posthog.mjs applies the posthog block, including one $feature_flag_called event at firstCalledDaysAgo and one at lastCalledDaysAgo so flag age and recency are both testable; scripts/verify-report.mjs checks a report against the expected block.",
+  "flags": [
+    {
+      "key": "new-checkout",
+      "name": "New checkout flow, rolled out to everyone in May 2026",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": false,
+        "rollout": 100,
+        "firstCalledDaysAgo": 120,
+        "lastCalledDaysAgo": 1
+      },
+      "code": {
+        "refs": [
+          "src/app/dashboard/page.tsx"
+        ],
+        "pattern": "useFeatureFlagEnabled, both branches rendered"
+      },
+      "expected": {
+        "verdict": "stale",
+        "reason": "fully-rolled-out"
+      }
+    },
+    {
+      "key": "beta-dashboard",
+      "name": "Beta dashboard header, never turned on",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": false,
+        "rollout": 0,
+        "firstCalledDaysAgo": 90,
+        "lastCalledDaysAgo": 1
+      },
+      "code": {
+        "refs": [
+          "src/app/dashboard/page.tsx"
+        ],
+        "pattern": "useFeatureFlagEnabled"
+      },
+      "expected": {
+        "verdict": "stale",
+        "reason": "never-enabled"
+      }
+    },
+    {
+      "key": "legacy-banner",
+      "name": "Moved-domain banner, archived in PostHog but still in code",
+      "posthog": {
+        "active": false,
+        "archived": true,
+        "deleted": false,
+        "rollout": 100,
+        "firstCalledDaysAgo": 300,
+        "lastCalledDaysAgo": 1
+      },
+      "code": {
+        "refs": [
+          "src/app/page.tsx"
+        ],
+        "pattern": "useFeatureFlagEnabled"
+      },
+      "expected": {
+        "verdict": "stale",
+        "reason": "archived-still-referenced"
+      }
+    },
+    {
+      "key": "old-pricing-test",
+      "name": "Pricing experiment, deleted in PostHog but still read server-side",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": true,
+        "rollout": 50,
+        "variants": [
+          "control",
+          "discounted"
+        ],
+        "firstCalledDaysAgo": 60,
+        "lastCalledDaysAgo": 1
+      },
+      "code": {
+        "refs": [
+          "src/app/api/search/route.ts"
+        ],
+        "pattern": "posthog-node getFeatureFlag"
+      },
+      "expected": {
+        "verdict": "stale",
+        "reason": "deleted-still-referenced"
+      }
+    },
+    {
+      "key": "pricing-v2-experiment",
+      "name": "Pricing page v2 experiment, code was reverted",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": false,
+        "rollout": 50,
+        "firstCalledDaysAgo": 90,
+        "lastCalledDaysAgo": 45
+      },
+      "code": {
+        "refs": [],
+        "pattern": "none"
+      },
+      "expected": {
+        "verdict": "stale",
+        "reason": "unreferenced"
+      }
+    },
+    {
+      "key": "holiday-promo",
+      "name": "Holiday promo banner, only mentioned in a comment now",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": false,
+        "rollout": 50,
+        "firstCalledDaysAgo": 400,
+        "lastCalledDaysAgo": 200
+      },
+      "code": {
+        "refs": [
+          "src/app/page.tsx"
+        ],
+        "pattern": "comment only"
+      },
+      "expected": {
+        "verdict": "stale",
+        "reason": "unreferenced-comment-only"
+      }
+    },
+    {
+      "key": "legacy-theme",
+      "name": "Legacy theme toggle, referenced only from a module nothing imports",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": false,
+        "rollout": 100,
+        "firstCalledDaysAgo": 500,
+        "lastCalledDaysAgo": 120
+      },
+      "code": {
+        "refs": [
+          "src/lib/unused/legacyTheme.ts"
+        ],
+        "pattern": "posthog.isFeatureEnabled in dead module"
+      },
+      "expected": {
+        "verdict": "stale",
+        "reason": "dead-code-reference"
+      }
+    },
+    {
+      "key": "server-rate-limit",
+      "name": "Server-side rate limit gate, rolled out to everyone",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": false,
+        "rollout": 100,
+        "firstCalledDaysAgo": 150,
+        "lastCalledDaysAgo": 1
+      },
+      "code": {
+        "refs": [
+          "src/app/api/search/route.ts"
+        ],
+        "pattern": "posthog-node isFeatureEnabled"
+      },
+      "expected": {
+        "verdict": "stale",
+        "reason": "fully-rolled-out"
+      }
+    },
+    {
+      "key": "ai-assistant",
+      "name": "AI assistant, live experiment with four unwrapped call sites",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": false,
+        "rollout": 50,
+        "firstCalledDaysAgo": 30,
+        "lastCalledDaysAgo": 1
+      },
+      "code": {
+        "refs": [
+          "src/app/dashboard/page.tsx",
+          "src/components/AiAssistantButton.tsx",
+          "src/components/AiAssistantPanel.tsx",
+          "src/components/AiAssistantHint.tsx"
+        ],
+        "pattern": "useFeatureFlagEnabled x3, posthog.isFeatureEnabled x1"
+      },
+      "expected": {
+        "verdict": "warning",
+        "reason": "multi-callsite-no-wrapper"
+      }
+    },
+    {
+      "key": "dark-mode",
+      "name": "Dark mode header, healthy partial rollout behind a wrapper hook",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": false,
+        "rollout": 30,
+        "firstCalledDaysAgo": 20,
+        "lastCalledDaysAgo": 1
+      },
+      "code": {
+        "refs": [
+          "src/lib/flags.ts",
+          "src/components/Header.tsx"
+        ],
+        "pattern": "wrapper hook useDarkMode"
+      },
+      "expected": {
+        "verdict": "healthy",
+        "reason": "active-partial-rollout-referenced"
+      }
+    },
+    {
+      "key": "new-nav",
+      "name": "Landing page nav, healthy",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": false,
+        "rollout": 50,
+        "firstCalledDaysAgo": 14,
+        "lastCalledDaysAgo": 1
+      },
+      "code": {
+        "refs": [
+          "src/app/page.tsx"
+        ],
+        "pattern": "<PostHogFeature>"
+      },
+      "expected": {
+        "verdict": "healthy",
+        "reason": "active-partial-rollout-referenced"
+      }
+    },
+    {
+      "key": "signup-cta-variant",
+      "name": "Signup CTA copy experiment, healthy multivariate",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": false,
+        "rollout": 100,
+        "variants": [
+          "control",
+          "short",
+          "long"
+        ],
+        "firstCalledDaysAgo": 10,
+        "lastCalledDaysAgo": 1
+      },
+      "code": {
+        "refs": [
+          "src/app/page.tsx"
+        ],
+        "pattern": "useFeatureFlagVariantKey"
+      },
+      "expected": {
+        "verdict": "healthy",
+        "reason": "active-multivariate-referenced"
+      }
+    },
+    {
+      "key": "ai-summaries",
+      "name": "AI summaries with payload, healthy",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": false,
+        "rollout": 60,
+        "payload": {
+          "maxSentences": 2
+        },
+        "firstCalledDaysAgo": 7,
+        "lastCalledDaysAgo": 1
+      },
+      "code": {
+        "refs": [
+          "src/app/dashboard/page.tsx"
+        ],
+        "pattern": "useFeatureFlagPayload"
+      },
+      "expected": {
+        "verdict": "healthy",
+        "reason": "active-partial-rollout-referenced"
+      }
+    },
+    {
+      "key": "export-csv",
+      "name": "CSV export, healthy small rollout read in a click handler",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": false,
+        "rollout": 10,
+        "firstCalledDaysAgo": 30,
+        "lastCalledDaysAgo": 2
+      },
+      "code": {
+        "refs": [
+          "src/app/dashboard/page.tsx"
+        ],
+        "pattern": "posthog.isFeatureEnabled in event handler"
+      },
+      "expected": {
+        "verdict": "healthy",
+        "reason": "active-partial-rollout-referenced"
+      }
+    },
+    {
+      "key": "support-chat",
+      "name": "Support chat widget, healthy",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": false,
+        "rollout": 20,
+        "firstCalledDaysAgo": 21,
+        "lastCalledDaysAgo": 1
+      },
+      "code": {
+        "refs": [
+          "src/components/SupportChat.tsx"
+        ],
+        "pattern": "useFeatureFlagEnabled"
+      },
+      "expected": {
+        "verdict": "healthy",
+        "reason": "active-partial-rollout-referenced"
+      }
+    },
+    {
+      "key": "onboarding-checklist",
+      "name": "Onboarding checklist, healthy behind a wrapper hook",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": false,
+        "rollout": 50,
+        "firstCalledDaysAgo": 14,
+        "lastCalledDaysAgo": 1
+      },
+      "code": {
+        "refs": [
+          "src/lib/flags.ts",
+          "src/app/dashboard/page.tsx"
+        ],
+        "pattern": "wrapper hook useOnboardingChecklist"
+      },
+      "expected": {
+        "verdict": "healthy",
+        "reason": "active-partial-rollout-referenced"
+      }
+    },
+    {
+      "key": "search-v2",
+      "name": "Search engine v2, healthy server-side rollout",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": false,
+        "rollout": 25,
+        "firstCalledDaysAgo": 12,
+        "lastCalledDaysAgo": 1
+      },
+      "code": {
+        "refs": [
+          "src/app/api/search/route.ts"
+        ],
+        "pattern": "posthog-node isFeatureEnabled"
+      },
+      "expected": {
+        "verdict": "healthy",
+        "reason": "active-partial-rollout-referenced"
+      }
+    },
+    {
+      "key": "annual-discount",
+      "name": "Annual discount line on pricing, healthy server component read",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": false,
+        "rollout": 40,
+        "firstCalledDaysAgo": 9,
+        "lastCalledDaysAgo": 1
+      },
+      "code": {
+        "refs": [
+          "src/app/pricing/page.tsx"
+        ],
+        "pattern": "posthog-node getAllFlags"
+      },
+      "expected": {
+        "verdict": "healthy",
+        "reason": "active-partial-rollout-referenced"
+      }
+    },
+    {
+      "key": "maintenance-banner",
+      "name": "Maintenance banner header set in proxy, healthy",
+      "posthog": {
+        "active": true,
+        "archived": false,
+        "deleted": false,
+        "rollout": 5,
+        "firstCalledDaysAgo": 5,
+        "lastCalledDaysAgo": 1
+      },
+      "code": {
+        "refs": [
+          "src/proxy.ts"
+        ],
+        "pattern": "posthog-node isFeatureEnabled in proxy"
+      },
+      "expected": {
+        "verdict": "healthy",
+        "reason": "active-partial-rollout-referenced"
+      }
+    }
+  ]
+}
